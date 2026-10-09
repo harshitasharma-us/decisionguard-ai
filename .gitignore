@@ -38,3 +38,10 @@ htmlcov/
 *.swo
 .DS_Store
 Thumbs.db
+
+# SQLite Databases
+*.db
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm

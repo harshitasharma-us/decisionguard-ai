@@ -62,3 +62,33 @@ def test_record_human_action():
     audit_res = client.get("/api/decision/audit-log")
     assert audit_res.status_code == 200
     assert any(log["sku"] == "SKU-BEV-2004" for log in audit_res.json())
+
+
+def test_unknown_sku_404():
+    """Verify requesting an unknown SKU returns 404."""
+    res = client.get("/api/inventory/SKU-NON-EXISTENT-9999")
+    assert res.status_code == 404
+    assert "not found" in res.json()["detail"].lower()
+
+
+def test_synthetic_seed_catalog_endpoints():
+    """Verify loading and clearing synthetic seeds dynamically updates catalog count."""
+    # 1. Load seeds
+    seed_res = client.post("/api/inventory/seed")
+    assert seed_res.status_code == 200
+    seeded_items = seed_res.json()
+    assert len(seeded_items) >= 12
+    assert any(item["sku"] == "SKU-MED-7023" for item in seeded_items)
+
+    # 2. Evaluate one of the synthetic items
+    eval_res = client.post("/api/evaluate/by-sku/SKU-MED-7023")
+    assert eval_res.status_code == 200
+    assert eval_res.json()["sku"] == "SKU-MED-7023"
+
+    # 3. Clear seeds
+    clear_res = client.delete("/api/inventory/seed")
+    assert clear_res.status_code == 200
+    cleared_items = clear_res.json()
+    assert len(cleared_items) == 5
+    assert not any(item["sku"] == "SKU-MED-7023" for item in cleared_items)
+
