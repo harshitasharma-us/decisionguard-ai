@@ -1,0 +1,6 @@
+sku,product_name,category,current_stock,safety_stock,reorder_point,target_stock_level,daily_velocity,supplier_lead_time_days,unit_cost_usd,selling_price_usd,supplier_moq,supplier_name,supplier_reliability_score,upcoming_event,notes
+SKU-ELEC-1001,Ultra-Fast USB-C 65W GaN Charger,Electronics,42,50,80,250,14.5,7,12.50,29.99,50,Apex Power Tech,0.94,Tech Week Sale in 10 days,High turnover SKU. Supplier has confirmed no supply bottlenecks.
+SKU-BEV-2004,Organic Cold Brew Matcha 12-Pack,Perishable Beverages,18,30,45,120,5.2,12,18.00,36.00,30,Zenith Botanicals,0.78,Winter seasonal drop-off expected,Expiry risk if over-ordered. Velocity dropping slightly week-over-week.
+SKU-FURN-3012,Ergonomic Mesh Task Chair (Obsidian),Office Furniture,8,15,20,60,1.8,21,85.00,199.00,15,ErgoForm Global,0.88,Corporate bulk order inquiry pending (30 units),Bulky item with high storage holding costs. Lead time is 3 weeks.
+SKU-APPAREL-4050,Thermal Merino Wool Trail Socks (3-Pack),Apparel,110,40,90,300,22.0,5,7.20,22.50,100,Alpine Craft Gear,0.98,Peak cold weather season starting,Surging winter demand. High safety stock recommended for next 60 days.
+SKU-CHEM-5088,Industrial Anti-Static Surface Cleaner (5L),Facility Supplies,5,10,15,40,0.8,14,24.00,54.00,10,CleanChem Dynamics,0.82,None,Critical operating consumable; stockout causes warehouse packing line shutdown.
