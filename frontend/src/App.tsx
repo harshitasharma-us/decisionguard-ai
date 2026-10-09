@@ -1,23 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Header } from './components/Header';
-import { FlowBreadcrumbs } from './components/FlowBreadcrumbs';
-import { InventorySelector } from './components/InventorySelector';
-import { EvaluationView } from './components/EvaluationView';
-import { HumanActionPanel } from './components/HumanActionPanel';
+import { Navbar } from './components/Navbar';
+import { HeroSection } from './components/HeroSection';
+import { InventoryIntelligenceBar } from './components/InventoryIntelligenceBar';
+import { DecisionJourney } from './components/DecisionJourney';
+import { HeroResultCard } from './components/HeroResultCard';
+import { BeforeAfterComparison } from './components/BeforeAfterComparison';
+import { SelfChallengePanel } from './components/SelfChallengePanel';
+import { DemandStockChart } from './components/DemandStockChart';
+import { HumanDecisionArea } from './components/HumanDecisionArea';
+
 import { apiService, HealthResponse } from './services/api';
 import {
   InventoryItem,
   EvaluationResponse,
   DecisionActionResponse,
 } from './types/inventory';
-import { Info, Sparkles, RefreshCw } from 'lucide-react';
+import { Sparkles, Terminal, ShieldAlert } from 'lucide-react';
 
 export default function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [healthLoading, setHealthLoading] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<string>('decision');
+
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState<boolean>(true);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
   const [currentStage, setCurrentStage] = useState<number>(1);
@@ -49,8 +57,10 @@ export default function App() {
     try {
       const items = await apiService.getInventory();
       setInventory(items);
-      if (items.length > 0 && !selectedItem) {
+      if (items.length > 0) {
         setSelectedItem(items[0]);
+        // Auto-run evaluation on the default item for immediate 5-second hackathon presentation impact!
+        runEvaluationForSku(items[0].sku);
       }
     } catch (err) {
       console.error('Failed to load inventory:', err);
@@ -59,23 +69,22 @@ export default function App() {
     }
   };
 
-  const handleRunEvaluation = async () => {
-    if (!selectedItem) return;
+  const runEvaluationForSku = async (sku: string) => {
     setIsEvaluating(true);
     setEvaluation(null);
 
-    // Progressive stage animation for interactive hackathon demo
+    // Multi-stage progressive pipeline animation (150-400ms paced)
     setCurrentStage(2); // Single-Pass
-    setTimeout(() => setCurrentStage(3), 400); // Self-Challenge
-    setTimeout(() => setCurrentStage(4), 800); // Re-evaluation
+    setTimeout(() => setCurrentStage(3), 350); // Self-Challenge
+    setTimeout(() => setCurrentStage(4), 700); // Re-evaluation
 
     try {
-      const result = await apiService.evaluateSku(selectedItem.sku);
+      const result = await apiService.evaluateSku(sku);
       setTimeout(() => {
         setEvaluation(result);
-        setCurrentStage(5); // Final synthesis
+        setCurrentStage(4);
         setIsEvaluating(false);
-      }, 1100);
+      }, 950);
     } catch (err) {
       console.error('Evaluation failed:', err);
       setIsEvaluating(false);
@@ -85,135 +94,178 @@ export default function App() {
 
   const handleSelectItem = (item: InventoryItem) => {
     setSelectedItem(item);
-    setEvaluation(null);
-    setCurrentStage(1);
+    runEvaluationForSku(item.sku);
   };
 
-  const handleActionComplete = (actionRes: DecisionActionResponse) => {
-    setRecentActions((prev) => [actionRes, ...prev]);
+  const handleTriggerEvaluation = () => {
+    if (selectedItem) {
+      runEvaluationForSku(selectedItem.sku);
+    }
+  };
+
+  const handleActionComplete = (res: DecisionActionResponse) => {
+    setRecentActions((prev) => [res, ...prev]);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Top Header */}
-      <Header
+    <div className="min-h-screen bg-dg-bg text-dg-text font-space selection:bg-dg-violet/40 selection:text-dg-cyan flex flex-col tech-grid-pattern">
+      {/* Top Navigation */}
+      <Navbar
         health={health}
         healthLoading={healthLoading}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         onRefreshHealth={checkBackendHealth}
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-7">
-        {/* Core Value Banner */}
-        <div className="bg-gradient-to-r from-cyan-950/30 via-slate-900/60 to-emerald-950/30 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0 mt-0.5">
-              <Info className="w-5 h-5" />
-            </div>
-            <div className="space-y-0.5">
-              <h2 className="text-sm font-bold text-white">
-                How DecisionGuard AI Works
-              </h2>
-              <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-                Conventional AI reorder systems output overconfident single-pass quantities. DecisionGuard AI forces the AI to challenge its own recommendation by identifying counter-arguments, missing constraints, and alternative order batches before presenting the synthesized decision.
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={loadInventory}
-            disabled={inventoryLoading}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg shrink-0 transition"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${inventoryLoading ? 'animate-spin' : ''}`} />
-            Reload SKUs
-          </button>
-        </div>
-
-        {/* 5-Stage Visual Workflow Pipeline */}
-        <FlowBreadcrumbs
-          currentStage={currentStage}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-7">
+        {/* Hero Section */}
+        <HeroSection
           isEvaluating={isEvaluating}
-          outcome={evaluation?.decision_outcome}
+          onTriggerEvaluation={handleTriggerEvaluation}
+          selectedSku={selectedItem?.sku || 'SKU-ELEC-1001'}
         />
 
-        {/* Inventory SKU Grid / Selection */}
+        {/* Inventory Intelligence Strip */}
         {inventoryLoading ? (
-          <div className="p-12 text-center text-slate-500 text-sm">
-            Loading synthetic inventory records...
+          <div className="dg-panel rounded-panel p-8 text-center text-xs font-mono text-dg-dim">
+            LOADING INVENTORY TELEMETRY...
           </div>
         ) : (
-          <InventorySelector
+          <InventoryIntelligenceBar
             items={inventory}
             selectedItem={selectedItem}
             onSelectItem={handleSelectItem}
-            onRunEvaluation={handleRunEvaluation}
             isEvaluating={isEvaluating}
           />
         )}
 
-        {/* Evaluation Output or Prompt to Run */}
-        {evaluation ? (
-          <div className="space-y-6 pt-2">
-            <EvaluationView evaluation={evaluation} />
-            <HumanActionPanel
-              evaluation={evaluation}
-              onActionComplete={handleActionComplete}
-            />
-          </div>
-        ) : selectedItem ? (
-          <div className="bg-slate-900/30 border border-dashed border-slate-800 rounded-2xl p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto border border-cyan-500/20">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold text-white">
-              Ready to challenge reorder for {selectedItem.sku}
-            </h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Click &quot;Run DecisionGuard AI&quot; above to initiate the multi-pass self-challenge decision cycle.
-            </p>
-            <button
-              onClick={handleRunEvaluation}
-              disabled={isEvaluating}
-              className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Launch Analysis
-            </button>
-          </div>
-        ) : null}
+        {/* Main Connected Decision Journey */}
+        <DecisionJourney
+          evaluation={evaluation}
+          currentStage={currentStage}
+          isEvaluating={isEvaluating}
+        />
 
-        {/* Recent Human Actions Audit Trail */}
-        {recentActions.length > 0 && (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Session Action Audit Trail
-            </h3>
-            <div className="space-y-2">
-              {recentActions.map((act, i) => (
-                <div
-                  key={i}
-                  className="bg-slate-950/60 border border-slate-800/80 px-3.5 py-2 rounded-xl flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-cyan-400">{act.sku}</span>
-                    <span className="text-slate-500">•</span>
-                    <span className="font-semibold text-white">{act.action}</span>
-                    <span className="text-slate-400">({act.final_approved_quantity} units)</span>
+        {/* Dynamic Tab Views */}
+        {activeTab === 'decision' && (
+          <div className="space-y-7 animate-fadeIn">
+            {evaluation ? (
+              <>
+                {/* Prominent Hero Result */}
+                <HeroResultCard evaluation={evaluation} />
+
+                {/* Side-by-Side Comparison */}
+                <BeforeAfterComparison evaluation={evaluation} />
+
+                {/* Self-Challenge 3 Investigation Lanes */}
+                <SelfChallengePanel evaluation={evaluation} />
+
+                {/* Demand Volatility Chart & Human Decision Panel */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
+                  {selectedItem && (
+                    <div className="lg:col-span-6">
+                      <DemandStockChart item={selectedItem} />
+                    </div>
+                  )}
+                  <div className={selectedItem ? 'lg:col-span-6' : 'lg:col-span-12'}>
+                    <HumanDecisionArea
+                      evaluation={evaluation}
+                      onActionComplete={handleActionComplete}
+                      recentActions={recentActions}
+                    />
                   </div>
-                  <span className="text-[11px] text-slate-500">
-                    {new Date(act.recorded_at).toLocaleTimeString()}
-                  </span>
                 </div>
-              ))}
+              </>
+            ) : (
+              <div className="dg-panel rounded-hero p-12 text-center space-y-3">
+                <Sparkles className="w-8 h-8 text-dg-cyan mx-auto animate-ai-pulse" />
+                <h3 className="text-base font-bold font-space text-white">
+                  Awaiting Decision Trigger
+                </h3>
+                <p className="text-xs text-dg-muted font-space max-w-md mx-auto">
+                  Click &quot;Challenge Reorder&quot; above to initiate the autonomous self-challenge audit loop.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'analysis' && evaluation && (
+          <div className="space-y-7 animate-fadeIn">
+            <SelfChallengePanel evaluation={evaluation} />
+            <BeforeAfterComparison evaluation={evaluation} />
+            {selectedItem && <DemandStockChart item={selectedItem} />}
+          </div>
+        )}
+
+        {activeTab === 'inventory' && selectedItem && (
+          <div className="space-y-7 animate-fadeIn">
+            <DemandStockChart item={selectedItem} />
+            {evaluation && <HeroResultCard evaluation={evaluation} />}
+          </div>
+        )}
+
+        {activeTab === 'audit' && (
+          <div className="dg-panel rounded-hero p-6 sm:p-8 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-dg-violet/15 pb-4">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-5 h-5 text-dg-cyan" />
+                <h2 className="text-lg font-bold text-white uppercase tracking-tight">
+                  Adversarial Audit & Human Decision Log
+                </h2>
+              </div>
+              <span className="text-xs font-mono text-dg-dim">
+                TOTAL ACTIONS: {recentActions.length}
+              </span>
             </div>
+
+            {recentActions.length === 0 ? (
+              <div className="py-12 text-center text-xs font-mono text-dg-dim space-y-2">
+                <ShieldAlert className="w-6 h-6 text-dg-lavender mx-auto opacity-40" />
+                <p>No actions logged yet in this session.</p>
+                <p className="text-dg-dim">Execute an Approve or Modify decision to create an audit record.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentActions.map((act, i) => (
+                  <div
+                    key={i}
+                    className="bg-dg-bg/80 p-4 rounded-panel border border-dg-violet/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-dg-cyan">{act.sku}</span>
+                        <span className="text-dg-dim">•</span>
+                        <span className="font-semibold text-dg-text">{act.action}</span>
+                        <span className="text-dg-lavender">({act.final_approved_quantity} units)</span>
+                      </div>
+                      <p className="text-[11px] text-dg-muted font-space">{act.message}</p>
+                    </div>
+                    <span className="text-[11px] text-dg-dim shrink-0">
+                      {new Date(act.recorded_at).toLocaleTimeString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900/80 px-6 py-4 text-center text-xs text-slate-500">
-        DecisionGuard AI — Self-Challenging Stock Reorder Assistant
+      <footer className="border-t border-dg-violet/15 bg-dg-bg/90 px-6 py-4 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-space text-dg-dim">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-dg-muted">DECISIONGUARD AI</span>
+            <span>—</span>
+            <span>Self-Challenging Stock Reorder Assistant</span>
+          </div>
+          <div className="font-mono text-[11px] text-dg-dim">
+            &quot;AI that challenges its own decisions.&quot;
+          </div>
+        </div>
       </footer>
     </div>
   );
