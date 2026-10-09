@@ -1,0 +1,6 @@
+sku,product_name,category,current_stock,safety_stock,reorder_point,target_stock_level,daily_velocity,supplier_lead_time_days,lead_time_days,unit_cost_usd,selling_price_usd,supplier_moq,supplier_name,supplier_reliability_score,supplier_reliability,shelf_life_days,warehouse_volume_cuft,weekly_demand,notes
+SKU-DEMO-CHG01,Apex Pro Gaming Wireless Mouse,Gaming Peripherals,40,50,80,400,10.0,14,14,28.00,79.99,50,Apex Peripheral Labs,0.88,0.88,,6.2,70,Bulky item with storage constraints.
+SKU-DEMO-AGR02,ProGrip Silicone Ergonomic Phone Case,Mobile Accessories,100,50,100,300,15.0,5,5,4.50,19.99,50,ProGrip Global,0.95,0.95,,,105,High velocity accessory.
+SKU-DEMO-STK03,Thermal Industrial Barcode Label Rolls,Warehouse Supplies,10,30,50,200,8.0,7,7,8.00,22.00,50,LabelTech Logistics,0.91,0.91,,,56,Critical packaging consumable.
+SKU-DEMO-UNC04,HydraGlow Peptide Facial Serum,Cosmetics,25,35,60,168,6.5,18,18,32.00,85.00,20,DermaBio Labs,0.72,0.72,,,45,Supplier fulfillment unreliable.
+SKU-DEMO-PER05,Artisan Cold-Pressed Almond Milk,Perishable Foods,20,30,50,150,6.0,10,10,3.50,8.99,30,PureNourish Farms,0.85,0.85,30,,42,Perishable item with 30-day shelf life.
